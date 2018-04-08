@@ -1,6 +1,6 @@
 # reddit irc bot
 
-posts newest posts from reddit
+posts newest posts from reddit's rss feeds
 
 ## example
 
