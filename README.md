@@ -15,9 +15,9 @@ import (
 
 func main() {
     settings := &bot.Bot{
-        IrcNick:       "examplenick",
+        IrcNick:       "example",
+        IrcUser:       "example",
         IrcPass:       "yourpass",
-        IrcName:       "example",
         IrcServer:     "chat.freenode.net:6697",
         IrcChannels:   []string{"#example", "#example2"},
         IrcTLS:        true,
