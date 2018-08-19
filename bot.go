@@ -18,6 +18,7 @@ var client = &http.Client{}
 
 type bot struct {
 	ircNick     string
+	ircPass     string
 	ircName     string
 	ircServer   string
 	ircChannels []string
@@ -34,6 +35,7 @@ type bot struct {
 //Bot settings
 type Bot struct {
 	IrcNick       string
+	IrcPass       string
 	IrcName       string
 	IrcServer     string
 	IrcChannels   []string
@@ -47,6 +49,7 @@ type Bot struct {
 func New(b *Bot) *bot {
 	return &bot{
 		ircConn:     dumbirc.New(b.IrcNick, b.IrcName, b.IrcServer, b.IrcTLS),
+		ircPass:     b.IrcPass,
 		ircChannels: b.IrcChannels,
 		fetchTicker: time.NewTicker(b.FetchInterval),
 		send:        make(chan string, 100),
@@ -159,6 +162,9 @@ func (b *bot) mainLoop() {
 
 //Start starts the bot
 func (b *bot) Start() {
+	if b.ircPass != "" {
+		b.ircConn.SetPassword(b.ircPass)
+	}
 	b.ircConn.HandleJoin(b.ircChannels)
 	b.ircConn.HandleNickTaken()
 	b.ircConn.HandlePingPong()

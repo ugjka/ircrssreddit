@@ -16,10 +16,11 @@ import (
 func main() {
     settings := &bot.Bot{
         IrcNick:       "examplenick",
+        IrcPass:       "yourpass",
         IrcName:       "example",
-        IrcServer:     "chat.freenode.net:8002",
+        IrcServer:     "chat.freenode.net:6697",
         IrcChannels:   []string{"#example", "#example2"},
-        IrcTLS:        false,
+        IrcTLS:        true,
         Endpoints:     []string{"/r/example/new", "/r/example2/new"},
         FetchInterval: time.Minute * 15,
         UserAgent:     "freenode #example irc reddit bot",
