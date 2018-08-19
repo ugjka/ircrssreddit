@@ -28,7 +28,6 @@ type bot struct {
 	lastID      uint64
 	send        chan string
 	feed        *gofeed.Parser
-	pp          chan bool
 	useragent   string
 }
 
@@ -51,7 +50,6 @@ func New(b *Bot) *bot {
 		ircChannels: b.IrcChannels,
 		fetchTicker: time.NewTicker(b.FetchInterval),
 		send:        make(chan string, 100),
-		pp:          make(chan bool, 1),
 		feed:        gofeed.NewParser(),
 		endpoints:   b.Endpoints,
 		useragent:   b.UserAgent,
@@ -68,64 +66,16 @@ func (b *bot) printer() {
 
 func (b *bot) ircControl() {
 	irc := b.ircConn
-	pingTick := time.NewTicker(time.Minute * 1)
 	for {
 		select {
 		case err := <-irc.Errchan:
+			irc.Disconnect()
 			log.Println("Irc error", err)
 			log.Println("Restarting irc")
 			time.Sleep(time.Minute * 1)
-			irc.Disconnect()
 			irc.Start()
-		case <-pingTick.C:
-			select {
-			case <-b.pp:
-				irc.Ping()
-			default:
-				log.Println("Got No Pong")
-			}
 		}
 	}
-}
-
-func (b *bot) addCallbacks() {
-	irc := b.ircConn
-	irc.AddCallback(dumbirc.WELCOME, func(msg *dumbirc.Message) {
-		log.Println("Joining channels")
-		irc.Join(b.ircChannels)
-	})
-	irc.AddCallback(dumbirc.PING, func(msg *dumbirc.Message) {
-		log.Println("PING received, sending PONG")
-		irc.Pong()
-	})
-	irc.AddCallback(dumbirc.NICKTAKEN, func(msg *dumbirc.Message) {
-		log.Println("Nick taken, changing nick")
-		irc.Nick = changeNick(irc.Nick)
-		irc.NewNick(irc.Nick)
-	})
-	irc.AddCallback(dumbirc.ANYMESSAGE, func(msg *dumbirc.Message) {
-		pingpong(b.pp)
-	})
-}
-
-func pingpong(c chan bool) {
-	select {
-	case c <- true:
-	default:
-		return
-	}
-}
-
-func changeNick(n string) string {
-	if len(n) < 16 {
-		n += "_"
-		return n
-	}
-	n = strings.TrimRight(n, "_")
-	if len(n) > 12 {
-		n = n[:12] + "_"
-	}
-	return n
 }
 
 // Get posts
@@ -209,7 +159,9 @@ func (b *bot) mainLoop() {
 
 //Start starts the bot
 func (b *bot) Start() {
-	b.addCallbacks()
+	b.ircConn.HandleJoin(b.ircChannels)
+	b.ircConn.HandleNickTaken()
+	b.ircConn.HandlePingPong()
 	b.ircConn.Start()
 	var err error
 	for {
