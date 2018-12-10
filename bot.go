@@ -14,7 +14,8 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-var client = &http.Client{}
+// Client let's you fiddle with http.Client
+var Client = &http.Client{}
 
 type bot struct {
 	ircNick     string
@@ -90,7 +91,7 @@ func (b *bot) fetch(endpoint string) (p *gofeed.Feed, err error) {
 	// Headers.
 	req.Header.Set("User-Agent", b.useragent)
 
-	resp, err := client.Do(req)
+	resp, err := Client.Do(req)
 	if err != nil {
 		return
 	}
