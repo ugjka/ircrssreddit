@@ -26,11 +26,11 @@ type bot struct {
 	ircTLS      bool
 	endpoints   []string
 	ircConn     *dumbirc.Connection
-	fetchTicker *time.Ticker
 	lastID      uint64
 	send        chan string
 	feed        *gofeed.Parser
 	useragent   string
+	interval    time.Duration
 }
 
 //Bot settings
@@ -52,11 +52,11 @@ func New(b *Bot) *bot {
 		ircConn:     dumbirc.New(b.IrcNick, b.IrcUser, b.IrcServer, b.IrcTLS),
 		ircPass:     b.IrcPass,
 		ircChannels: b.IrcChannels,
-		fetchTicker: time.NewTicker(b.FetchInterval),
 		send:        make(chan string, 100),
 		feed:        gofeed.NewParser(),
 		endpoints:   b.Endpoints,
 		useragent:   b.UserAgent,
+		interval:    b.FetchInterval,
 	}
 }
 
@@ -153,9 +153,16 @@ func (b *bot) getPosts() {
 }
 
 func (b *bot) mainLoop() {
+	round := time.Now().Round(time.Minute * 30)
+	if time.Now().After(round) {
+		round.Add(time.Minute * 30)
+	}
+	time.Sleep(round.Sub(time.Now()))
+	ticker := time.NewTicker(b.interval)
+	b.getPosts()
 	for {
 		select {
-		case <-b.fetchTicker.C:
+		case <-ticker.C:
 			b.getPosts()
 		}
 	}
