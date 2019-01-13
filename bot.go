@@ -155,7 +155,7 @@ func (b *bot) getPosts() {
 func (b *bot) mainLoop() {
 	round := time.Now().Round(time.Minute * 30)
 	if time.Now().After(round) {
-		round.Add(time.Minute * 30)
+		round = round.Add(time.Minute * 30)
 	}
 	time.Sleep(round.Sub(time.Now()))
 	ticker := time.NewTicker(b.interval)
