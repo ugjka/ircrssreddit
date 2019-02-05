@@ -145,7 +145,13 @@ func (b *bot) getPosts() {
 				tmpLargest = decoded
 			}
 			if b.lastID < decoded {
-				b.send <- fmt.Sprintf("[reddit] [%s] %s https://redd.it/%s", v.Author.Name, v.Title, v.GUID[3:])
+				name := ""
+				if v.Author == nil {
+					name = "account_deleted"
+				} else {
+					name = v.Author.Name
+				}
+				b.send <- fmt.Sprintf("[reddit] [%s] %s https://redd.it/%s", name, v.Title, v.GUID[3:])
 			}
 		}
 	}
