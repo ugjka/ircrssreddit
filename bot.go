@@ -31,6 +31,7 @@ type bot struct {
 	feed        *gofeed.Parser
 	useragent   string
 	interval    time.Duration
+	round       time.Duration
 }
 
 //Bot settings
@@ -43,6 +44,7 @@ type Bot struct {
 	IrcTLS        bool
 	Endpoints     []string
 	FetchInterval time.Duration
+	Round         time.Duration
 	UserAgent     string
 }
 
@@ -57,6 +59,7 @@ func New(b *Bot) *bot {
 		endpoints:   b.Endpoints,
 		useragent:   b.UserAgent,
 		interval:    b.FetchInterval,
+		round:       b.Round,
 	}
 }
 
@@ -159,9 +162,9 @@ func (b *bot) getPosts() {
 }
 
 func (b *bot) mainLoop() {
-	round := time.Now().Round(time.Minute * 30)
+	round := time.Now().Round(b.round)
 	if time.Now().After(round) {
-		round = round.Add(time.Minute * 30)
+		round = round.Add(b.round)
 	}
 	time.Sleep(round.Sub(time.Now()))
 	ticker := time.NewTicker(b.interval)
