@@ -87,7 +87,10 @@ func (b *bot) ircControl() {
 
 // Get posts
 func (b *bot) fetch(endpoint string) (p *gofeed.Feed, err error) {
-	req, err := http.NewRequest("GET", "https://www.reddit.com"+endpoint+".rss", nil)
+	if !strings.Contains(endpoint, ".rss") {
+		endpoint += ".rss"
+	}
+	req, err := http.NewRequest("GET", "https://www.reddit.com"+endpoint, nil)
 	if err != nil {
 		return
 	}
