@@ -18,48 +18,51 @@ import (
 var Client = &http.Client{}
 
 type bot struct {
-	ircNick     string
-	ircUser     string
-	ircPass     string
-	ircServer   string
-	ircChannels []string
-	ircTLS      bool
-	endpoints   []string
-	ircConn     *dumbirc.Connection
-	lastID      uint64
-	send        chan string
-	feed        *gofeed.Parser
-	useragent   string
-	interval    time.Duration
-	round       time.Duration
+	ircNick        string
+	ircUser        string
+	ircPass        string
+	ircServer      string
+	ircChannels    []string
+	ircTLS         bool
+	endpoints      []string
+	ircConn        *dumbirc.Connection
+	lastID         uint64
+	send           chan string
+	feed           *gofeed.Parser
+	useragent      string
+	interval       time.Duration
+	round          time.Duration
+	printSubreddit bool
 }
 
 //Bot settings
 type Bot struct {
-	IrcNick       string
-	IrcUser       string
-	IrcPass       string
-	IrcServer     string
-	IrcChannels   []string
-	IrcTLS        bool
-	Endpoints     []string
-	FetchInterval time.Duration
-	Round         time.Duration
-	UserAgent     string
+	IrcNick        string
+	IrcUser        string
+	IrcPass        string
+	IrcServer      string
+	IrcChannels    []string
+	IrcTLS         bool
+	Endpoints      []string
+	FetchInterval  time.Duration
+	Round          time.Duration
+	UserAgent      string
+	PrintSubreddit bool
 }
 
 //New creates a new bot object
 func New(b *Bot) *bot {
 	return &bot{
-		ircConn:     dumbirc.New(b.IrcNick, b.IrcUser, b.IrcServer, b.IrcTLS),
-		ircPass:     b.IrcPass,
-		ircChannels: b.IrcChannels,
-		send:        make(chan string, 100),
-		feed:        gofeed.NewParser(),
-		endpoints:   b.Endpoints,
-		useragent:   b.UserAgent,
-		interval:    b.FetchInterval,
-		round:       b.Round,
+		ircConn:        dumbirc.New(b.IrcNick, b.IrcUser, b.IrcServer, b.IrcTLS),
+		ircPass:        b.IrcPass,
+		ircChannels:    b.IrcChannels,
+		send:           make(chan string, 100),
+		feed:           gofeed.NewParser(),
+		endpoints:      b.Endpoints,
+		useragent:      b.UserAgent,
+		interval:       b.FetchInterval,
+		round:          b.Round,
+		printSubreddit: b.PrintSubreddit,
 	}
 }
 
@@ -130,6 +133,7 @@ func (b *bot) firstRun() error {
 }
 
 func (b *bot) getPosts() {
+	reddit := "reddit"
 	var tmpLargest uint64
 	dup := make(map[uint64]bool)
 	for _, v := range b.endpoints {
@@ -157,7 +161,10 @@ func (b *bot) getPosts() {
 				} else {
 					name = v.Author.Name
 				}
-				b.send <- fmt.Sprintf("[reddit] [%s] %s https://redd.it/%s", name, v.Title, v.GUID[3:])
+				if b.printSubreddit && v.Categories != nil {
+					reddit = "/r/" + v.Categories[0]
+				}
+				b.send <- fmt.Sprintf("[%s] [%s] %s https://redd.it/%s", reddit, name, v.Title, v.GUID[3:])
 			}
 		}
 	}
