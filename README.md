@@ -1,6 +1,6 @@
 # reddit irc bot
 
-[![Donate](https://dl.ugjka.net/Donate-PayPal-green.svg)](https://www.paypal.me/ugjka)
+[![Donate](paypal.svg?raw=true)](https://www.paypal.me/ugjka)
 
 posts newest posts from reddit's rss feeds
 
@@ -12,22 +12,26 @@ package main
 import (
     "time"
 
-    "github.com/ugjka/ircrssreddit"
+    bot "github.com/ugjka/ircrssreddit"
 )
 
 func main() {
     settings := &bot.Bot{
-        IrcNick:       "example",
-        IrcUser:       "example",
-        IrcPass:       "yourpass",
-        IrcServer:     "chat.freenode.net:6697",
-        IrcChannels:   []string{"#example", "#example2"},
-        IrcTLS:        true,
-        Endpoints:     []string{"/r/example/new", "/r/example2/new"},
-        FetchInterval: time.Minute * 15,
-        UserAgent:     "freenode #example irc reddit bot",
+        Nick:     "examplenick",
+        Server:   "chat.freenode.net:6697",
+        Channels: []string{"#test"},
+        SSL:      true,
+        Subreddits: []string{
+            "/r/testsub/new/",
+            "/r/testsub2/new/",
+            "/r/testsub3/new/",
+            },
+        CheckInterval: time.Minute * 5,
+        RoundInterval: time.Minute * 5,
+        UserAgent:     "freenode #test personal irc reddit bot",
+        PrintSub:      true,
     }
-    rbot := bot.New(settings)
-    rbot.Start()
+    instance := bot.New(settings)
+    instance.Start()
 }
 ```
