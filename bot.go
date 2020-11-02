@@ -15,28 +15,40 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-// Client let's you fiddle with http.Client
+// Client let's you customize the underlying http client
 var Client = &http.Client{}
 
 // Bot contains bot's settings
 type Bot struct {
-	Server        string
-	Nick          string
-	Channels      []string
-	SSL           bool
-	Password      string
-	Subreddits    []string
+	// IRC server
+	Server string
+	// IRC nick
+	Nick string
+	// IRC channels
+	Channels []string
+	// Use SSL for IRC
+	SSL bool
+	// IRC password
+	Password string
+	// Subreddits to track
+	// Format: "/r/SomeSubreddit/new"
+	Subreddits []string
+	// Subreddit polling interval
 	CheckInterval time.Duration
+	// Round polling to nearest duration
 	RoundInterval time.Duration
-	UserAgent     string
-	PrintSub      bool
-	irc           *kitty.Bot
-	highestID     uint64
-	send          chan string
-	feed          *gofeed.Parser
+	// Custom user agent so that reddit doesn't ban us
+	// Essential!
+	UserAgent string
+	// Print subreddit's name in output
+	PrintSub bool
+	irc      *kitty.Bot
+	latestID uint64
+	send     chan string
+	feed     *gofeed.Parser
 }
 
-//New creates a new bot object
+//New creates a new bot instance
 func New(bot *Bot) *Bot {
 	bot.send = make(chan string, 100)
 	bot.feed = gofeed.NewParser()
@@ -105,8 +117,8 @@ func (bot *Bot) firstRun() error {
 				continue
 			}
 			decoded := base36.Decode(v.GUID[3:])
-			if bot.highestID < decoded {
-				bot.highestID = decoded
+			if bot.latestID < decoded {
+				bot.latestID = decoded
 			}
 		}
 	}
@@ -135,7 +147,7 @@ func (bot *Bot) fetchPosts() {
 			if high < decoded {
 				high = decoded
 			}
-			if bot.highestID < decoded {
+			if bot.latestID < decoded {
 				name := ""
 				if item.Author == nil {
 					name = "account_deleted"
@@ -149,7 +161,7 @@ func (bot *Bot) fetchPosts() {
 			}
 		}
 	}
-	bot.highestID = high
+	bot.latestID = high
 }
 
 //Start starts the bot
