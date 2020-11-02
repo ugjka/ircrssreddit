@@ -33,6 +33,7 @@ type Bot struct {
 	Password string
 	// Subreddits to track
 	// Format: "/r/SomeSubreddit/new"
+	// Multireddit: "/user/someuser/m/some_multi_reddit/new/"
 	Subreddits []string
 	// Subreddit polling interval
 	CheckInterval time.Duration
