@@ -1,3 +1,4 @@
+// Package bot is an IRC bot that posts latest entries from Reddit communities
 package bot
 
 import (
